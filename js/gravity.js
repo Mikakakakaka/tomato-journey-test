@@ -1,18 +1,32 @@
 /**
  * 重力感应封装 - 兼容 DeviceMotion / DeviceOrientation
  * 需要 HTTPS 或 localhost，iOS 需用户授权
+ * 手机：死区 + 降灵敏度，更丝滑；电脑：WASD 通过轮询驱动
  */
 (function (global) {
   var callbacks = [];
   var lastBeta = 0;
   var lastGamma = 0;
-  var smoothing = 0.15;
+  var smoothing = 0.28;
 
-  // 归一化倾斜：-1 ~ 1（左负右正，用于横屏感应的 gamma）
+  var deadZone = 0.12;
+  var maxTilt = 0.65;
+  var pollId = null;
+
+  function applyDeadZoneAndCurve(v) {
+    if (Math.abs(v) <= deadZone) return 0;
+    var sign = v > 0 ? 1 : -1;
+    var t = (Math.abs(v) - deadZone) / (1 - deadZone);
+    t = Math.pow(t, 1.2);
+    return sign * Math.min(maxTilt, t * maxTilt);
+  }
+
   function getTilt() {
+    var x = Math.max(-1, Math.min(1, lastGamma / 45));
+    var y = Math.max(-1, Math.min(1, (lastBeta - 45) / 45));
     return {
-      x: Math.max(-1, Math.min(1, lastGamma / 45)),
-      y: Math.max(-1, Math.min(1, (lastBeta - 45) / 45)),
+      x: applyDeadZoneAndCurve(x),
+      y: applyDeadZoneAndCurve(y),
       raw: { beta: lastBeta, gamma: lastGamma }
     };
   }
@@ -22,7 +36,6 @@
     var g = e.gamma != null ? e.gamma : e.accelerationIncludingGravity?.x;
     if (typeof b === 'number') lastBeta = lastBeta + (b - lastBeta) * smoothing;
     if (typeof g === 'number') lastGamma = lastGamma + (g - lastGamma) * smoothing;
-    callbacks.forEach(function (cb) { cb(getTilt()); });
   }
 
   function requestPermission(cb) {
@@ -54,18 +67,25 @@
   }
 
   var keyTilt = { x: 0, y: 0 };
-  var keySpeed = 0.5;
+  var keySpeed = 0.55;
   function onKey(e) {
+    var key = e.key;
+    var isOurKey = key === 'ArrowLeft' || key === 'ArrowRight' || key === 'ArrowUp' || key === 'ArrowDown' ||
+                   key === 'a' || key === 'A' || key === 'd' || key === 'D' ||
+                   key === 'w' || key === 'W' || key === 's' || key === 'S';
+    if (!isOurKey) return;
+    if (e.type === 'keydown') e.preventDefault();
     var down = e.type === 'keydown' ? 1 : 0;
-    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keyTilt.x = -down * keySpeed;
-    else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keyTilt.x = down * keySpeed;
-    else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keyTilt.y = -down * keySpeed;
-    else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') keyTilt.y = down * keySpeed;
+    if (key === 'ArrowLeft' || key === 'a' || key === 'A') keyTilt.x = -down * keySpeed;
+    else if (key === 'ArrowRight' || key === 'd' || key === 'D') keyTilt.x = down * keySpeed;
+    else if (key === 'ArrowUp' || key === 'w' || key === 'W') keyTilt.y = -down * keySpeed;
+    else if (key === 'ArrowDown' || key === 's' || key === 'S') keyTilt.y = down * keySpeed;
   }
   if (typeof window !== 'undefined') {
-    window.addEventListener('keydown', onKey);
-    window.addEventListener('keyup', onKey);
+    window.addEventListener('keydown', onKey, true);
+    window.addEventListener('keyup', onKey, true);
   }
+
   function getTiltWithKeys() {
     var t = getTilt();
     var useKeys = (keyTilt.x !== 0 || keyTilt.y !== 0);
@@ -73,12 +93,26 @@
     return t;
   }
 
+  function poll() {
+    if (callbacks.length === 0) return;
+    var t = getTiltWithKeys();
+    callbacks.forEach(function (cb) { cb(t); });
+    pollId = requestAnimationFrame(poll);
+  }
+
   global.Gravity = {
     on: function (callback) {
-      if (typeof callback === 'function') callbacks.push(callback);
+      if (typeof callback === 'function') {
+        callbacks.push(callback);
+        if (pollId === null) pollId = requestAnimationFrame(poll);
+      }
     },
     off: function (callback) {
       callbacks = callbacks.filter(function (c) { return c !== callback; });
+      if (callbacks.length === 0 && pollId !== null) {
+        cancelAnimationFrame(pollId);
+        pollId = null;
+      }
     },
     getTilt: getTiltWithKeys,
     requestPermission: requestPermission,

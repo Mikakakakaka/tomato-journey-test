@@ -59,6 +59,8 @@
 
   function startGame() {
     showScreen('game');
+    var gameScreen = document.getElementById('screen-game');
+    if (gameScreen && gameScreen.focus) gameScreen.focus();
     if (window.TomatoJourney && window.TomatoJourney.startChapter) {
       window.TomatoJourney.startChapter(currentChapter);
     }
@@ -95,6 +97,8 @@
 
   function retry() {
     showScreen('game');
+    var gameScreen = document.getElementById('screen-game');
+    if (gameScreen && gameScreen.focus) gameScreen.focus();
     if (window.TomatoJourney && window.TomatoJourney.startChapter) {
       window.TomatoJourney.startChapter(currentChapter);
     }

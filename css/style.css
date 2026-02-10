@@ -115,6 +115,11 @@ html, body {
 #screen-game {
   padding: 0;
   justify-content: flex-start;
+  outline: none;
+}
+
+#screen-game:focus {
+  outline: none;
 }
 
 #game-hud {
