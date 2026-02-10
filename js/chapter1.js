@@ -171,8 +171,8 @@
     if (!ctx || !canvas) return;
     var dt = 0.016;
     timeLeft -= dt;
-    plantX += (targetPlantX - plantX) * 0.065;
-    plantTilt += ((lastTiltX || 0) * 25 - plantTilt) * 0.08;
+    plantX += (targetPlantX - plantX) * 0.048;
+    plantTilt += ((lastTiltX || 0) * 25 - plantTilt) * 0.06;
     spawnCollectibles(now);
     updateCollectibles(dt * 60);
     checkCollision();
@@ -209,11 +209,15 @@
   }
 
   var lastTiltX = 0;
+  var smoothTargetX = 0.5;
   function onTilt(tilt) {
     var tx = Math.max(-1, Math.min(1, tilt.x));
     lastTiltX = tx;
     var tiltRange = 0.7;
-    targetPlantX = Math.max(0.02, Math.min(0.98, (tx + tiltRange) / (tiltRange * 2)));
+    var rawTarget = (tx + tiltRange) / (tiltRange * 2);
+    rawTarget = Math.max(0.02, Math.min(0.98, rawTarget));
+    smoothTargetX += (rawTarget - smoothTargetX) * 0.18;
+    targetPlantX = smoothTargetX;
   }
 
   function start() {
@@ -221,6 +225,7 @@
     timeLeft = totalTime;
     plantX = 0.5;
     targetPlantX = 0.5;
+    smoothTargetX = 0.5;
     plantTilt = 0;
     lastTiltX = 0;
     waterDrops = [];

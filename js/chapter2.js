@@ -127,9 +127,15 @@
   }
 
   function onTilt(tilt) {
-    var k = 0.8;
-    vx = -tilt.x * k;
-    vy = -tilt.y * k;
+    var k = 0.85;
+    var dead = 0.2;
+    if (Math.abs(tilt.x) < dead && Math.abs(tilt.y) < dead) {
+      vx = (0.5 - tomatoX) * 1.2;
+      vy = (0.5 - tomatoY) * 1.2;
+    } else {
+      vx = tilt.x * k;
+      vy = tilt.y * k;
+    }
     tomatoX = Math.max(0.15, Math.min(0.85, tomatoX + vx * 0.02));
     tomatoY = Math.max(0.2, Math.min(0.8, tomatoY + vy * 0.02));
   }
