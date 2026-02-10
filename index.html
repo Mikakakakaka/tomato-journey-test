@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#2d5016" />
+  <title>番茄的旅程 - 食物的来之不易</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 开始 / 说明 -->
+    <section id="screen-intro" class="screen active">
+      <div class="intro-content">
+        <h1>🍅 番茄的旅程</h1>
+        <p class="tagline">食物的来之不易</p>
+        <p class="intro-text">
+          很多人以为食物是从货架上长出来的，忘了它们也曾是生命。<br>
+          你将扮演一颗番茄，经历生长、运输与储存，体会从田间到餐桌的艰辛。
+        </p>
+        <button id="btn-start" class="btn-primary">开始旅程</button>
+      </div>
+    </section>
+
+    <!-- 章节选择 / 章节说明 -->
+    <section id="screen-chapter-intro" class="screen">
+      <div class="chapter-intro-content">
+        <h2 id="chapter-title">第一章</h2>
+        <p id="chapter-desc" class="chapter-desc"></p>
+        <button id="btn-play-chapter" class="btn-primary">开始</button>
+      </div>
+    </section>
+
+    <!-- 游戏主画布 -->
+    <section id="screen-game" class="screen">
+      <div id="game-hud">
+        <div id="hud-left"></div>
+        <div id="hud-center"></div>
+        <div id="hud-right"></div>
+      </div>
+      <canvas id="game-canvas"></canvas>
+      <div id="tilt-hint">请倾斜手机控制番茄（电脑可用方向键或 A/D、W/S）</div>
+    </section>
+
+    <!-- 胜利 -->
+    <section id="screen-win" class="screen">
+      <div class="result-content">
+        <h2 id="win-title">🎉 过关！</h2>
+        <p id="win-desc"></p>
+        <button id="btn-next-chapter" class="btn-primary">下一章</button>
+        <button id="btn-final-done" class="btn-primary" style="display:none">感谢游玩</button>
+      </div>
+    </section>
+
+    <!-- 失败 - 垃圾桶 -->
+    <section id="screen-lose" class="screen">
+      <div class="lose-content">
+        <h2>😢 没能走到餐桌</h2>
+        <div id="trash-can">
+          <div class="trash-bin"></div>
+          <div id="trash-tomatoes"></div>
+        </div>
+        <p id="lose-desc" class="lose-desc"></p>
+        <p class="lose-message">垃圾桶里，是那些没能被珍惜的番茄。</p>
+        <button id="btn-retry" class="btn-primary">再试一次</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/gravity.js"></script>
+  <script src="js/chapter1.js"></script>
+  <script src="js/chapter2.js"></script>
+  <script src="js/chapter3.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
